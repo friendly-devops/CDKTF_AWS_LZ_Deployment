@@ -1,0 +1,32 @@
+name: "Push Workflow"
+
+on:
+  push:
+    branches:
+    - "*"
+    secrets:
+      AWS_ACCOUNT:
+        required: true
+      AWS_ROLE:
+        required: true
+
+
+jobs:
+  tf_deployment:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.0
+      - name: install dependencies
+        run: |
+          npm install --force
+          npm install -g cdktf-cli@latest --force
+      - name: CDKTF Synth
+        run: |
+          cdktf --app "npx ts-node main.ts" synth
+        env:
+          STATE_BUCKET: ${{ secrets.BUCKET_NAME }}
